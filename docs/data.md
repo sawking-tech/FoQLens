@@ -50,4 +50,4 @@ bench asks for a slice and knows no SQL.
   language of the answer - is counted in seconds.
 - The slice "lost answers next to bf16's" showed Chinese characters, and the order of the lines showed
   that whole batches broke. That is how a fault of the bench was found
-  ([#14](https://github.com/Vovanda/FoQLens/issues/14)): the fused attention kernel collapsed padded batches.
+  ([#14](https://github.com/sawking-tech/FoQLens/issues/14)): the fused attention kernel collapsed padded batches.

@@ -6,11 +6,11 @@ Hi, I'm Vladimir Savkin. I studied mathematics and programming and hold a master
 
 FoQLens raises the precision of the weights only where the question needs it.
 
-**[vovanda.github.io/FoQLens](https://vovanda.github.io/FoQLens/)** - the idea, with the controls of the
+**[foqlens.sawking.tech](https://foqlens.sawking.tech/)** - the idea, with the controls of the
 regulator to move: base precision, the size and strength of the zones, how overlaps combine, and what
 the setting costs in bits per weight. The metaphor they act on is drawn on real weights: the map of
 Gemma 4 E2B, 14 708 blocks, blocks that light up together lying close.
-[The documents](https://vovanda.github.io/FoQLens/docs.html) - the mechanism, the preregistration and
+[The documents](https://foqlens.sawking.tech/docs.html) - the mechanism, the preregistration and
 every run - are on the same site.
 
 The larger goal is a universal **precision regulator** - one mechanism that sets how finely a model works right now and makes it adaptive: to the task, to the machine it runs on and to the value of the query ([the idea](https://sawking.tech/blog/kvantovaniie-vsio-chto-vam-nuzhno)). One set of weights serves every device and every load: it runs lean on a phone or on a hot, busy server, and opens to full precision exactly where a query needs it. Under pressure it degrades gracefully - the background coarsens first, what the query needs stays sharp.
@@ -131,7 +131,7 @@ unpacks the copy for a GEMM.
 Requirements: an NVIDIA GPU with 16 GB+ of memory, [uv](https://docs.astral.sh/uv/). uv fetches Python 3.12 by itself.
 
 ```sh
-git clone https://github.com/Vovanda/FoQLens.git
+git clone https://github.com/sawking-tech/FoQLens.git
 cd FoQLens
 uv sync                                              # torch (CUDA 12.8), transformers, bitsandbytes
 uv run python scripts/download_models.py e2b e2b-it   # Gemma 4 E2B and E2B-it at their pinned revisions, ~20 GB
