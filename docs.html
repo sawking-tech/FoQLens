@@ -8,8 +8,8 @@
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500&family=IBM+Plex+Sans:wght@400;500;600&display=swap" rel="stylesheet">
-<link rel="stylesheet" href="site/site.css?v=58">
-<link rel="stylesheet" href="site/docs.css?v=58">
+<link rel="stylesheet" href="site/site.css?v=59">
+<link rel="stylesheet" href="site/docs.css?v=59">
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.16.11/katex.min.css">
 <script>
 /* The theme is set before the first paint, from the reader's own choice or, by default, from the
@@ -172,7 +172,7 @@ setTimeout(function () { document.documentElement.classList.remove("unlaid"); },
 
 <script src="https://cdnjs.cloudflare.com/ajax/libs/marked/15.0.7/marked.min.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.16.11/katex.min.js"></script>
-<script src="site/panel.js?v=58"></script>
+<script src="site/panel.js?v=59"></script>
 <script>
 /* ==== THE SHELF ==== */
 // Every document the site shows, by the path it has in the repository - the page renders the same
@@ -283,8 +283,10 @@ function resolveLink(href, fromPath) {
     else if (part !== "." && part !== "") base.push(part);
   }
   const target = byPath.get(base.join("/"));
-  const hash = href.includes("#") ? "#" + href.split("#")[1] : "";
-  return target ? `#${target.id}` : REPO + base.join("/") + hash;
+  const section = href.includes("#") ? href.split("#")[1] : "";
+  if (!target) return REPO + base.join("/") + (section ? "#" + section : "");
+  // a section of another document is addressed as #<document>:<section>; a slug has no colon
+  return `#${target.id}${section ? ":" + section : ""}`;
 }
 
 /* ==== MATH ==== */
@@ -313,23 +315,30 @@ function renderMath(html, formulas) {
 
 /* ==== ANCHORS ==== */
 // A heading gets the id GitHub gives it, so the same "#section" link works in the repository and here;
-// on this page the hash names the document, so a link to a section scrolls instead of navigating.
+// on this page the hash names the document, so a link to a section scrolls instead of navigating, and the
+// address becomes #<document>:<section>, which opens the document on that section again.
 function slug(text) {
   return text.trim().toLowerCase().replace(/[^\p{L}\p{N}\s-]/gu, "").replace(/\s/g, "-");
 }
 
-function anchorSections(body) {
+function scrollToSection(section) {
+  doc.querySelector(`[id="${CSS.escape(section)}"]`)?.scrollIntoView();
+}
+
+function anchorSections(body, docId) {
   for (const heading of body.querySelectorAll("h1, h2, h3, h4, h5, h6")) heading.id = slug(heading.textContent);
   for (const link of body.querySelectorAll('a[href^="#"]')) {
     const section = decodeURIComponent(link.getAttribute("href").slice(1));
     link.addEventListener("click", (event) => {
       event.preventDefault();
-      doc.querySelector(`[id="${CSS.escape(section)}"]`)?.scrollIntoView();
+      history.replaceState(null, "", `#${docId}:${encodeURIComponent(section)}`);
+      scrollToSection(section);
     });
   }
 }
 
-async function show(id) {
+async function show(address) {
+  const [id, section = ""] = address.split(/:(.*)/s);
   const entry = BY_ID.get(ALIASES[id] ?? id) ?? BY_ID.get(DEFAULT_DOC);
   const path = fileOf(entry);
   markCurrent(entry.id);
@@ -348,7 +357,7 @@ async function show(id) {
   const body = document.createElement("div");
   const { text: markdown, formulas } = extractMath(stripFrontMatter(text));
   body.innerHTML = renderMath(marked.parse(markdown), formulas);
-  anchorSections(body);
+  anchorSections(body, entry.id);
   for (const link of body.querySelectorAll("a[href]:not([href^='#'])")) {
     const resolved = resolveLink(link.getAttribute("href"), path);
     if (resolved) link.setAttribute("href", resolved);
@@ -363,6 +372,7 @@ async function show(id) {
   doc.append(...body.childNodes);
   document.title = `${entry.title[langIndex()]} - FoQLens`;
   doc.focus?.();
+  if (section) scrollToSection(decodeURIComponent(section));
 }
 
 addEventListener("hashchange", () => show(location.hash.slice(1)));
